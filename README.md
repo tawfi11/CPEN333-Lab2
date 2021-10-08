@@ -1,1 +1,2 @@
-# CPEN333-Lab2
+Github user: tawfi11
+Real name: Nusair Islam
