@@ -9,8 +9,8 @@ namespace MergeSort
     {
         static void Main(string[] args)
         {
-            int ARRAY_SIZE = 10000000;
-            int threadCount = 10;
+            int ARRAY_SIZE = 1000000;
+            int threadCount = 12;
             int min = 0;
             int max = ARRAY_SIZE;
             int[] arraySingleThread = new int[ARRAY_SIZE];
@@ -40,7 +40,8 @@ namespace MergeSort
             sw.Start();
             MergeSort(arraySingleThread);
             //TODO :Stop the stopwatch
-            Console.WriteLine("Is single threaded array sorted: {0}\nTime elapsed: {1}ms\n",IsSorted(arraySingleThread), sw.ElapsedMilliseconds);
+            long singleThreadTime = sw.ElapsedMilliseconds;
+            Console.WriteLine("Is single threaded array sorted: {0}\nTime elapsed: {1}ms\n",IsSorted(arraySingleThread), singleThreadTime);
 
 
 
@@ -48,7 +49,7 @@ namespace MergeSort
             List<int[]> multiThreadArrayList = new List<int[]>();
             for (int i = 0; i < threadCount; i++)
             {
-                int[] multiThreadArray = new int[ARRAY_SIZE / 10];
+                int[] multiThreadArray = new int[ARRAY_SIZE / threadCount];
                 Array.Copy(arrayMultiThread, i * multiThreadArray.Length, multiThreadArray, 0, multiThreadArray.Length);
                 multiThreadArrayList.Add(multiThreadArray);
             }
@@ -68,7 +69,10 @@ namespace MergeSort
                 t.Join();
             }
             MultiThreadMerge(multiThreadArrayList, arrayMultiThread, max);
-            Console.WriteLine("Is multithreaded array sorted? {0}\nTime elapsed: {1}ms", IsSorted(arrayMultiThread), sw.ElapsedMilliseconds);
+            long multiThreadTime = sw.ElapsedMilliseconds;
+            sw.Stop();
+            Console.WriteLine("Is multithreaded array sorted? {0}\nTime elapsed: {1}ms\n", IsSorted(arrayMultiThread), multiThreadTime);
+            Console.WriteLine("Speed up Factor = {0}", Convert.ToSingle(singleThreadTime) / multiThreadTime);
         }
 
             /*********************** Methods **********************
