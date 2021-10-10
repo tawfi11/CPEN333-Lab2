@@ -9,7 +9,7 @@ namespace MergeSort
     {
         static void Main(string[] args)
         {
-            int ARRAY_SIZE = 1000000;
+            int ARRAY_SIZE = 1000000000;
             int threadCount = 12;
             int min = 0;
             int max = ARRAY_SIZE;

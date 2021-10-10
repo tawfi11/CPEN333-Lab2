@@ -9,37 +9,44 @@ namespace Pi
     {
         static List<double[]> samples;
         public static long hits;
+        public static Mutex mut;
+        static Random r;
         static void Main(string[] args)
         {
-            Console.WriteLine("Core count: {0}\n", Environment.ProcessorCount);
-            long numberOfSamples = 100000000;
-            int threadNum = 20;
+            long numberOfSamples = 10000000;
+            int threadNum = 1000;
+            Console.WriteLine("Core count: {0}\nNumber of Samples: {1}\nThread Number: {2}\n\n", Environment.ProcessorCount, numberOfSamples, threadNum);
             hits = 0;
-            samples = GenerateSamples(numberOfSamples);
             Stopwatch sw = new Stopwatch();
             sw.Start();
+            samples = GenerateSamples(numberOfSamples);
             double pi = EstimatePI(numberOfSamples,ref hits);
+            sw.Stop();
             long singleThreadTime = sw.ElapsedMilliseconds;
 
             Console.WriteLine("Single threading PI: {0}\nTime: {1}\n", pi, singleThreadTime);
 
             hits = 0;
             List<Thread> threadList = new List<Thread>();
+            mut = new Mutex();
             sw.Restart();
-            for(int i = 0; i < threadNum; i++)
+            for (int i = 0; i < threadNum; i++)
             {
                 threadWork tw = new threadWork();
                 Thread th = new Thread(() => tw.estimatePI(numberOfSamples / threadNum));
+                threadList.Add(th);
                 th.Start();
             }
+            
             foreach(Thread t in threadList)
             {
                 t.Join();
             }
 
             double multiThreadPi = 4 * Convert.ToDouble(hits) / numberOfSamples;
-            long multiThreadTime = sw.ElapsedMilliseconds;
             sw.Stop();
+            long multiThreadTime = sw.ElapsedMilliseconds;
+            
             Console.WriteLine("Multi threading PI: {0}\nTime: {1}\n", multiThreadPi, multiThreadTime);
             Console.WriteLine("Speed up factor: {0}", singleThreadTime / Convert.ToDouble(multiThreadTime));
         }
@@ -60,13 +67,25 @@ namespace Pi
         {
             double min = -1;
             double max = 1;
-            Random r = new Random();
             List<double[]> randomSamples = new List<double[]>();
             for (int i = 0; i < numberOfSamples; i++)
             {
-                randomSamples.Add(new double[] {r.NextDouble() * (max - min) + min, r.NextDouble() * (max - min) + min});
+                randomSamples.Add(new double[] {StaticRandom.Rand(max, min), StaticRandom.Rand(max,min)});
             }
             return randomSamples;
+        }
+    }
+
+    public static class StaticRandom
+    {
+        static int seed = Environment.TickCount;
+
+        static readonly ThreadLocal<Random> random =
+            new ThreadLocal<Random>(() => new Random(Interlocked.Increment(ref seed)));
+
+        public static double Rand(double max, double min)
+        {
+            return random.Value.NextDouble() * (max-min) + min;
         }
     }
 
@@ -74,19 +93,19 @@ namespace Pi
     {
         public void estimatePI(object numberOfSamplesObj)
         {
-            Mutex mut = new Mutex();
+            int hits = 0;
             long numberOfSamples = Convert.ToInt64(numberOfSamplesObj);
             List<double[]> samples = Program.GenerateSamples(Convert.ToInt64(numberOfSamplesObj));
             for (int i = 0; i < numberOfSamples; i++)
             {
+                //Console.Write("Point: {0},{1}\r", samples[i][0], samples[i][1]);
                 double magnitude = Math.Sqrt((samples[i][0] * samples[i][0]) + (samples[i][1] * samples[i][1]));
                 if (magnitude <= 1)
                 {
-                    mut.WaitOne();
-                    Program.hits++;
-                    mut.ReleaseMutex();
+                    hits++;
                 }
             }
+            Interlocked.Add(ref Program.hits, hits);
         }
     }
 }
