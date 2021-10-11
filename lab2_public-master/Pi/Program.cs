@@ -13,8 +13,8 @@ namespace Pi
         static Random r;
         static void Main(string[] args)
         {
-            long numberOfSamples = 10000000;
-            int threadNum = 1000;
+            long numberOfSamples = 100000000;
+            int threadNum = 20;
             Console.WriteLine("Core count: {0}\nNumber of Samples: {1}\nThread Number: {2}\n\n", Environment.ProcessorCount, numberOfSamples, threadNum);
             hits = 0;
             Stopwatch sw = new Stopwatch();

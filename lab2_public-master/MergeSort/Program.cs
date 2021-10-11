@@ -9,12 +9,12 @@ namespace MergeSort
     {
         static void Main(string[] args)
         {
-            int ARRAY_SIZE = 1000000000;
-            int threadCount = 12;
+            int ARRAY_SIZE = 1000000;
+            int threadCount = 13;
             int min = 0;
             int max = ARRAY_SIZE;
             int[] arraySingleThread = new int[ARRAY_SIZE];
-
+            Console.WriteLine($"Thread count = {threadCount}\nArray size = {ARRAY_SIZE}\n\n");
 
 
             Random r = new Random();
